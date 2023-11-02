@@ -11,6 +11,16 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+       theme: ThemeData.dark().copyWith(
+        // Adicione as cores personalizadas aqui
+        primaryColor: Colors.grey[800]!, // Adicione "!" aqui
+        scaffoldBackgroundColor: Colors.grey[900]!, // Adicione "!" aqui
+        colorScheme: ColorScheme.dark(
+          primary: Colors.grey[800]!, // Adicione "!" aqui
+          secondary: Colors.grey[600]!, // Adicione "!" aqui
+        ),
+        // ... outras personalizações de cor conforme necessário
+      ),
       home: BluetoothScreen(),
     );
   }
@@ -157,7 +167,12 @@ Widget build(BuildContext context) {
                   size: 40.0,
                 ),
               ),
-            Text(result),
+            Container(
+              child: Text(
+                result,
+                style: TextStyle(color: Colors.white), // Defina a cor do texto
+              ),
+            ),
          ],
         ),
         Expanded(

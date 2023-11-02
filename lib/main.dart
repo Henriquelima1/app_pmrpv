@@ -27,6 +27,8 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
   TextEditingController plateController = TextEditingController();
   String result = '';
   String statusMessage = '';
+  bool checkIcon = false;
+  CarInfo? carInfo;
 
   @override
   void initState() {
@@ -65,12 +67,33 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
       //   });
       // }
       //Simulação de dados
-      final CarInfo? carInfo = await ApiService.getCarInfo(plate);
+      carInfo = await ApiService.getCarInfo(plate);
 
       if (carInfo != null) {
-        setState(() {
-          result = 'Placa: ${carInfo.placa}\nMarca: ${carInfo.marca}\nModelo: ${carInfo.modelo}';
+         setState(() {
+          result = 'codigoRetorno: ${carInfo?.codigoRetorno},\n'
+            'mensagemRetorno: "${carInfo?.mensagemRetorno}",\n'
+            'codigoSituacao: "${carInfo?.codigoSituacao}",\n'
+            'situacao: "${carInfo?.situacao}",\n'
+            'modelo: "${carInfo?.modelo}",\n'
+            'marca: "${carInfo?.marca}",\n'
+            'cor: "${carInfo?.cor}",\n'
+            'ano: "${carInfo?.ano}",\n'
+            'anoModelo: "${carInfo?.anoModelo}",\n'
+            'placa: "${carInfo?.placa}",\n'
+            'data: "${carInfo?.data}",\n'
+            'uf: "${carInfo?.uf}",\n'
+            'municipio: "${carInfo?.municipio}",\n'
+            'chassi: "${carInfo?.chassi}",\n'
+            'dataAtualizacaoCaracteristicasVeiculo: "${carInfo?.dataAtualizacaoCaracteristicasVeiculo}",\n'
+            'dataAtualizacaoRouboFurto: "${carInfo?.dataAtualizacaoRouboFurto}",\n'
+            'dataAtualizacaoAlarme: "${carInfo?.dataAtualizacaoAlarme}"';
           statusMessage = 'Consulta bem-sucedida!';
+          if(carInfo?.codigoSituacao == '200'){
+            checkIcon = true;
+          }else{
+            checkIcon = false;
+          }
         });
       } else {
         setState(() {
@@ -97,47 +120,62 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Bluetooth Devices'),
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              controller: plateController,
-              decoration: InputDecoration(labelText: 'Insira a placa do carro'),
-            ),
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: Text('Bluetooth Devices'),
+    ),
+    body: Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: TextField(
+            controller: plateController,
+            decoration: InputDecoration(labelText: 'Insira a placa do carro'),
           ),
-          ElevatedButton(
-            onPressed: () {
-              String plate = plateController.text;
-              if (plate.isNotEmpty) {
-                _makeHttpRequest(plate);
-              }
+        ),
+        ElevatedButton(
+          onPressed: () {
+            String plate = plateController.text;
+            if (plate.isNotEmpty) {
+              _makeHttpRequest(plate);
+            }
+          },
+          child: Text('Consultar Placa'),
+        ),
+        SizedBox(height: 20),
+        Column(
+         children: [
+            if (checkIcon)
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.all(10),
+                color: Colors.green,
+                child: Icon(
+                  Icons.check,
+                  color: Colors.white,
+                  size: 40.0,
+                ),
+              ),
+            Text(result),
+         ],
+        ),
+        Expanded(
+          child: ListView.builder(
+            itemCount: devices.length,
+            itemBuilder: (context, index) {
+              return ListTile(
+                title: Text(devices[index].name ?? 'Nome Desconhecido'),
+                onTap: () {
+                  // Conectar ao dispositivo selecionado e realizar operações Bluetooth
+                  // Exemplo: bluetooth.connect(devices[index]);
+                },
+              );
             },
-            child: Text('Consultar Placa'),
           ),
-          SizedBox(height: 20),
-          Text(result),
-          Expanded(
-            child: ListView.builder(
-              itemCount: devices.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(devices[index].name ?? 'Nome Desconhecido'),
-                  onTap: () {
-                    // Conectar ao dispositivo selecionado e realizar operações Bluetooth
-                    // Exemplo: bluetooth.connect(devices[index]);
-                  },
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
 }

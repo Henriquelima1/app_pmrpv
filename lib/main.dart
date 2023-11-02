@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:http/http.dart' as http;
+import 'dart:typed_data';
+
 
 import 'car_info.dart';
 import 'api_service.dart';
@@ -33,6 +35,7 @@ class BluetoothScreen extends StatefulWidget {
 
 class _BluetoothScreenState extends State<BluetoothScreen> {
   FlutterBluetoothSerial bluetooth = FlutterBluetoothSerial.instance;
+  BluetoothConnection? connection;
   List<BluetoothDevice> devices = [];
   TextEditingController plateController = TextEditingController();
   String result = '';
@@ -59,6 +62,43 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
       devices = _devices;
     });
   }
+
+  // ...
+
+  void _connectToBluetooth() async {
+    List<BluetoothDevice> devices = await FlutterBluetoothSerial.instance.getBondedDevices();
+
+    if (devices.isNotEmpty) {
+      BluetoothDevice selectedDevice = devices[0];
+      BluetoothConnection.toAddress(selectedDevice.address).then((conn) {
+        print('Conectado ao dispositivo: ${selectedDevice.name}');
+        setState(() {
+          connection = conn;
+        });
+
+        // Inicie a escuta por dados
+        connection?.input?.listen(
+          (Uint8List data) {
+            String receivedMessage = String.fromCharCodes(data);
+            print('Mensagem recebida: $receivedMessage');
+
+            
+          },
+          onDone: () {
+            print('Conexão Bluetooth encerrada');
+            
+          },
+        );
+      }).catchError((error) {
+        print('Erro ao conectar ao dispositivo Bluetooth: $error');
+      });
+    } else {
+    print('Nenhum dispositivo Bluetooth emparelhado encontrado.');
+  }
+  }
+
+  // ...
+
 
   void _makeHttpRequest(String plate) async {
     try {
